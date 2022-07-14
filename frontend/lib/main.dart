@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:pos_communicator/network_discovery.dart';
 import 'package:pos_communicator/pos_communicator.dart';
+import 'package:pos_communicator/pos_server.dart';
+import 'package:pos_communicator/remote_device.dart';
 
-void main() {
+final networkDiscovery = NetworkDiscovery();
+final posServer = POSServer();
+final remoteDevice = RemoteDevice();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await networkDiscovery.register();
+  await posServer.start(networkDiscovery.port);
+  networkDiscovery.deviceStream.listen((event) async {
+    print('----------------------------------------');
+    print(event);
+    print('========================================');
+    for(final deviceInfo in event) {
+      await remoteDevice.get('deviceData', deviceInfo);
+    }
+  });
   runApp(const MyApp());
 }
 
